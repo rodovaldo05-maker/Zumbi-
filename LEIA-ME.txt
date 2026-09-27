@@ -1,0 +1,13 @@
+ApocalipseZz - projeto Android (WebView)
+
+O jogo inteiro fica em app/src/main/assets/index.html e roda offline.
+O ícone está em app/src/main/res/mipmap-*.
+
+Para gerar o APK pelo GitHub (dá para fazer pelo celular):
+1. Crie um repositório novo no github.com.
+2. Envie todos os arquivos desta pasta, mantendo as pastas (inclusive .github).
+3. Abra a aba "Actions". O fluxo "Gerar APK" roda sozinho (uns 5 minutos).
+4. Entre na execução concluída e baixe "ApocalipseZz-apk" em Artifacts.
+5. Descompacte e instale o app-debug.apk no celular (permita instalar de fontes desconhecidas).
+
+Para gerar no computador: abra a pasta no Android Studio e use Build > Build APK(s).
