@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="fundo_icone">#0B0717</color>
+    <style name="Tema" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/fundo_icone</item>
+    </style>
+</resources>
