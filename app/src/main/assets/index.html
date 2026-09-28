@@ -344,6 +344,25 @@ i.it.food{background-image:var(--food);background-size:calc(var(--p)*448) calc(v
 #stT{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.4;color:#f2f4f8;min-height:3.2em}
 .stbtns{display:flex;justify-content:flex-end;gap:6px;margin-top:6px}
 .stbtns .btn{font-size:11px;min-height:28px}
+
+/* celular deitado: telas em duas colunas (em pé, .lc/.lL/.lR não mudam nada) */
+.lc,.lL,.lR{display:contents}
+.lOnly{display:none}
+.pOnly{display:block}
+body.land .lOnly{display:block}
+body.land .pOnly{display:none}
+body.land #col{max-width:calc(var(--p)*760);padding:calc(env(safe-area-inset-top,0px) + var(--p)*4) calc(env(safe-area-inset-right,0px) + var(--p)*10) calc(var(--p)*8) calc(env(safe-area-inset-left,0px) + var(--p)*10);gap:calc(var(--p)*4)}
+body.land .lc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:calc(var(--p)*4) calc(var(--p)*10);align-items:start}
+body.land .lc.wide{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+body.land .lc.menu{grid-template-columns:minmax(0,1fr) minmax(0,2fr);align-items:center}
+body.land .lL,body.land .lR{display:flex;flex-direction:column;min-width:0}
+body.land .lL>.panel:first-child,body.land .lR>.panel:first-child{margin-top:0!important}
+body.land .list.two{display:grid;grid-template-columns:1fr 1fr}
+body.land .list.two .btn.big{font-size:calc(var(--p)*12);min-height:calc(var(--p)*26);padding:calc(var(--p)*2) calc(var(--p)*5) calc(var(--p)*3)}
+body.land .zctl{margin-top:0}
+body.land .mTop{flex-wrap:wrap}
+body.land .mInfo{flex-basis:calc(var(--p)*90)!important;min-width:0}
+body.land .lR .shoplist{max-height:calc(var(--p)*170)}
 </style>
 </head>
 <body>
@@ -367,7 +386,8 @@ const px=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCas
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ---------- escala de pixel ---------- */
-function fitP(){ const p=Math.max(1,Math.min(4,Math.min(innerWidth/250,innerHeight/330))); root.style.setProperty('--p',(Math.round(p*8)/8)+'px'); }
+function fitP(){ const land=innerWidth>innerHeight*1.15; document.body.classList.toggle('land',land);
+  const p=Math.max(1,Math.min(4,land?Math.min(innerWidth/560,innerHeight/280):Math.min(innerWidth/250,innerHeight/330))); root.style.setProperty('--p',(Math.round(p*8)/8)+'px'); }
 fitP(); addEventListener('resize',fitP);
 
 /* ---------- imagens ---------- */
@@ -532,6 +552,7 @@ function digits(n){
   return '<span class="cnt">'+s.split('').map(ch=>{ const k=ch==='.'?'dot':ch; return `<img src="${A.digits[k]}" class="${k==='dot'?'dot':''}" style="width:calc(var(--p)*${k==='M'?9:k==='4'||k==='K'?7:k==='dot'?4:6})" alt="">`; }).join('')+'</span>';
 }
 function win(title,body,opts={}){ return `<section class="win"><div class="wt t20 ol">${px(title)}</div>${opts.noX?'':`<button class="wx" data-go="${backTo}" aria-label="Voltar"></button>`}${body}</section>`; }
+const LC=(l,r,cls='')=>`<div class="lc ${cls}"><div class="lL">${l}</div><div class="lR">${r}</div></div>`;
 const rarTxt=r=>`<span style="color:${RAR[r].t}">${px(RAR[r].n)}</span>`;
 
 /* ---------- navegação ---------- */
@@ -549,16 +570,17 @@ function render(arg){
 /* ---------- MENU PRINCIPAL ---------- */
 function scMenu(el){
   const c=CHARS[S.char];
-  el.innerHTML=`<img src="${Z.logo}" alt="ApocalipseZz" style="display:block;width:min(100%,calc(var(--p)*270));margin:calc(var(--p)*2) auto calc(var(--p)*-2);image-rendering:pixelated">`+win('Menu',`
-    <div style="display:flex;gap:calc(var(--p)*6);align-items:flex-end;margin-bottom:calc(var(--p)*6)">
+  el.innerHTML=`<img class="pOnly" src="${Z.logo}" alt="ApocalipseZz" style="width:min(100%,calc(var(--p)*270));margin:calc(var(--p)*2) auto calc(var(--p)*-2);image-rendering:pixelated">`+win('Menu',LC(`
+    <img class="lOnly" src="${Z.logo}" alt="ApocalipseZz" style="width:100%;margin-bottom:calc(var(--p)*4);image-rendering:pixelated">
+    <div class="mTop" style="display:flex;gap:calc(var(--p)*6);align-items:flex-end;margin-bottom:calc(var(--p)*6)">
       <canvas class="spr" id="mSpr" style="width:calc(var(--p)*96);height:calc(var(--p)*96)"></canvas>
-      <div style="flex:1;padding-bottom:calc(var(--p)*6)">
+      <div class="mInfo" style="flex:1;padding-bottom:calc(var(--p)*6)">
         <div class="t16 ol">${px(c.nome)}</div>
         <div class="t10 muted" style="margin-top:calc(var(--p)*3)">${S.eq.fogo!=null?px(ITEMS[S.eq.fogo].nome):'SEM ARMA DE FOGO'}</div>
         <div class="t10 muted">${S.eq.branca!=null?px(ITEMS[S.eq.branca].nome):'SEM ARMA BRANCA'}</div>
       </div>
-    </div>
-    <div class="list">
+    </div>`,`
+    <div class="list two">
       <button class="btn big b-slate" data-go="levels">${gi(34)} JOGAR</button>
       <button class="btn big b-green" data-go="zone">${gi(19)} ZONA SEGURA</button>
       <button class="btn big b-orange" data-go="race">${gi(11)} CORRIDA</button>
@@ -570,7 +592,7 @@ function scMenu(el){
       <button class="btn big b-slate" data-go="skills">${gi(33)} HABILIDADES</button>
       <button class="btn big b-slate" data-go="shop">${gi(9)} LOJA</button>
       <button class="btn big b-slate" data-go="settings">${gi(26)} CONFIGURACOES</button>
-    </div>`,{noX:true});
+    </div>`,'menu'),{noX:true});
   const mc=$('mSpr'); mc.width=72; mc.height=48; mc.style.width='calc(var(--p)*144)'; const mg=mc.getContext('2d'); mg.imageSmoothingEnabled=false; let mf=0, emo=null, ef=0;
   const miv=setInterval(()=>{ if(!mc.isConnected){ clearInterval(miv); return; } mf++; mg.clearRect(0,0,72,48);
     if(emo){ const m=A.animMeta[emo]; mg.drawImage(IMG['char_'+S.char],ef*48,m[0]*48,48,48,0,0,48,48); if(++ef>=m[1]) emo=null; } else drawHeld(mg,S.char,'idle',mf,0,0,false); },140);
@@ -582,12 +604,12 @@ function scChar(el){
   let pick=S.char;
   const AN=[['idle','Parado'],['run','Correr'],['combo','Socos'],['punch','Chute'],['special','Especial'],['jump','Pulo'],['hurt','Dano'],['death','Morte']];
   const EM=[['happy','Feliz'],['angry','Bravo'],['talk','Falar'],['use','Usar'],['dash','Dash'],['idle2','Relógio']];
-  el.innerHTML=win('Personagem',`
+  el.innerHTML=win('Personagem',LC(`
     <div class="cards">${Object.keys(CHARS).map(k=>`<button class="card ${k===pick?'on':''}" data-c="${k}"><canvas class="spr" style="width:calc(var(--p)*48);height:calc(var(--p)*48)"></canvas><span class="ol">${px(k)}</span></button>`).join('')}</div>
     <div class="stage"><canvas class="spr" id="cBig" style="width:calc(var(--p)*144);height:calc(var(--p)*144);flex:none"></canvas></div>
     <div class="t16 ol" id="cName"></div>
     <p class="desc" id="cDesc"></p>
-    <div class="bars t10" id="cBars"></div>
+    <div class="bars t10" id="cBars"></div>`,`
     <div class="t10 muted" style="margin:calc(var(--p)*8) 0 calc(var(--p)*3)">ANIMACOES</div>
     <div class="anims">${AN.map(([k,n])=>`<button class="btn b-slate" data-a="${k}">${px(n)}</button>`).join('')}</div>
     <div class="t10 muted" style="margin:calc(var(--p)*6) 0 calc(var(--p)*3)">EMOTES DA ZONA DE COMPRA</div>
@@ -601,7 +623,7 @@ function scChar(el){
       ${['cabeca','corpo','maos','pes'].map(k=>`<button class="chip" data-go="inv" style="justify-content:space-between;cursor:pointer;color:#fff;background:none;font-family:inherit"><span>${px(SLOTN[k])}</span><span class="muted">${S.eq[k]!=null?px(ITEMS[S.eq[k]].nome)+' +'+ITEMS[S.eq[k]].def:'VAZIO'}</span></button>`).join('')}
       <div class="t10 good" style="text-align:right">DEFESA TOTAL +${['cabeca','corpo','maos','pes'].reduce((a,k)=>a+(S.eq[k]!=null?ITEMS[S.eq[k]].def:0),0)}</div>
     </div>
-    <div class="row" style="margin-top:calc(var(--p)*8)"><button class="btn big b-green" id="cPick"></button></div>`);
+    <div class="row" style="margin-top:calc(var(--p)*8)"><button class="btn big b-green" id="cPick"></button></div>`));
   el.querySelectorAll('.card').forEach(b=>sprite(b.querySelector('canvas'),b.dataset.c,'idle'));
   const big=sprite($('cBig'),pick,'idle');
   function upd(){
@@ -626,8 +648,8 @@ function slotHTML(i,s,opt={}){
 }
 function scInv(el){
   let sel=-1, arm=false;
-  el.innerHTML=win('Inventario',`
-    <div class="grid" id="iGrid" style="width:calc(var(--p)*162);height:calc(var(--p)*194);background-image:url(${gridURL(5,6)})"></div>
+  el.innerHTML=win('Inventario',LC(`
+    <div class="grid" id="iGrid" style="width:calc(var(--p)*162);height:calc(var(--p)*194);background-image:url(${gridURL(5,6)})"></div>`,`
     <div class="row" style="margin-top:calc(var(--p)*6)">
       <div class="chip t10" style="flex:1"><span>FOGO</span><span id="iEqF" class="muted"></span></div>
     </div>
@@ -635,7 +657,7 @@ function scInv(el){
       <div class="chip t10" style="flex:1"><span>BRANCA</span><span id="iEqB" class="muted"></span></div>
     </div>
     <div class="panel" style="margin-top:calc(var(--p)*6)" id="iInfo"></div>
-    <div class="row" style="margin-top:calc(var(--p)*4)"><button class="btn b-orange" id="iSort">ORDENAR</button><button class="btn b-slate" data-go="craft">CRIACAO</button></div>`);
+    <div class="row" style="margin-top:calc(var(--p)*4)"><button class="btn b-orange" id="iSort">ORDENAR</button><button class="btn b-slate" data-go="craft">CRIACAO</button></div>`));
   const grid=$('iGrid');
   function drawGrid(){ grid.innerHTML=S.inv.map((s,i)=>slotHTML(i,s,{cls:i===sel?'sel':'',eqMark:true})).join('');
     $('iEqF').textContent=S.eq.fogo!=null?px(ITEMS[S.eq.fogo].nome):'NENHUMA ARMA DE FOGO';
@@ -679,10 +701,10 @@ function scInv(el){
 /* ---------- CRIAÇÃO ---------- */
 function scCraft(el,tabArg){
   let tab=tabArg||'branca', sel=-1;
-  el.innerHTML=win('Criacao',`
+  el.innerHTML=win('Criacao',LC(`
     <div class="tabs"><button class="tab" data-t="branca">ARMAS BRANCAS</button><button class="tab" data-t="fogo">ARMAS DE FOGO</button></div>
-    <div class="scroll" style="max-height:calc(var(--p)*130)"><div class="grid" id="kGrid"></div></div>
-    <div class="panel" style="margin-top:calc(var(--p)*6)" id="kInfo"></div>`);
+    <div class="scroll" style="max-height:calc(var(--p)*130)"><div class="grid" id="kGrid"></div></div>`,`
+    <div class="panel" style="margin-top:calc(var(--p)*6)" id="kInfo"></div>`));
   const ids=()=>ITEMS.filter(t=>t.tipo===tab).map(t=>t.id);
   const can=id=>recipe(id).every(([m,q])=>countOf(m)>=q);
   function draw(){
@@ -742,11 +764,11 @@ function scSkills(el,tabArg){
   let tab=tabArg||'pass', sel=null, br=0;
   const sk2=k=>(S.skills&&S.skills[k])||0;
   if(S.lvl==null){ S.lvl=1; S.xp=0; }
-  el.innerHTML=win('Habilidades',`
+  el.innerHTML=win('Habilidades',LC(`
     <div id="sHead"></div>
     <div class="tabs"><button class="tab" data-t="pass">PASSIVAS</button><button class="tab" data-t="spec">ESPECIAIS</button><button class="tab" data-t="body">CORPO</button><button class="tab" data-t="sum">RESUMO</button></div>
-    <div id="sTree"></div>
-    <div class="panel" style="margin-top:calc(var(--p)*6)" id="sInfo"></div>`);
+    <div id="sTree"></div>`,`
+    <div class="panel" style="margin-top:calc(var(--p)*6)" id="sInfo"></div>`));
   const nodeHTML=(k,set,icon,frame,lvNow,max,cls='')=>`<button class="node ${cls} ${sel===k?'sel':''}" data-k="${k}"><span class="nb">${skF(frame)}${skI(set,icon)}</span><span class="pips">${Array.from({length:max},(_,x)=>`<b class="${x<lvNow?'on':''}"></b>`).join('')}</span></button>`;
   function treeState(bi,ti){ const br=SK_TREE[bi], s=br.sk[ti], k=s[0], sup=ti===4, max=sup?1:3, l=Math.min(lv(k),max);
     const open=ti===0||(sup?lv(br.sk[3][0])>=3:lv(br.sk[ti-1][0])>0);
@@ -827,7 +849,7 @@ function scSkills(el,tabArg){
 function scShop(el,arg){
   let tab=(arg&&arg.tab)||'fogo', mode='buy', sel=null;
   const TABS=[['fogo','ARMAS DE FOGO'],['branca','ARMAS BRANCAS'],['sup','SUPRIMENTOS'],['med','KITS MEDICOS'],['arm','ARMADURAS'],['mat','MATERIAIS'],['min','METALURGIA'],['body','MELHORIAS'],['veh','VEICULOS'],['pet','ANIMAIS']];
-  el.innerHTML=win('Loja',`
+  el.innerHTML=win('Loja',LC(`
     <div class="shoptop">
       <canvas class="spr" id="shSpr" style="width:calc(var(--p)*96);height:calc(var(--p)*96);flex:none"></canvas>
       <div class="emotes">
@@ -837,9 +859,9 @@ function scShop(el,arg){
     </div>
     <div class="t10 muted shopnote" style="margin-top:calc(var(--p)*6)">PRECO CHEIO. NA ZONA SEGURA CADA VENDEDOR TEM PROMOCOES QUE DEPENDEM DA SUA REPUTACAO.</div>
     <div class="tabs"><button class="tab" data-m="buy">COMPRAR</button><button class="tab" data-m="sell">VENDER</button></div>
-    <div class="tabs" id="shTabs">${TABS.map(([k,n,l])=>`<button class="tab ${l?'lock':''}" data-t="${k}">${n}</button>`).join('')}</div>
+    <div class="tabs" id="shTabs">${TABS.map(([k,n,l])=>`<button class="tab ${l?'lock':''}" data-t="${k}">${n}</button>`).join('')}</div>`,`
     <div id="shBody"></div>
-    <div class="panel" style="margin-top:calc(var(--p)*6)" id="shInfo"></div>`);
+    <div class="panel" style="margin-top:calc(var(--p)*6)" id="shInfo"></div>`));
   const spr=sprite($('shSpr'),S.char,'idle');
   el.querySelectorAll('[data-e]').forEach(b=>b.onclick=()=>{ setAnim(spr,b.dataset.e,false,'idle'); sfx('tab'); });
   sfx('bell');
@@ -989,7 +1011,7 @@ const POIS=[
 let zoneState={x:90,face:1,night:false};
 function scZone(el){
   el.innerHTML=`<section class="win"><div class="wt t20 ol">ZONA SEGURA</div><button class="wx" data-go="menu" aria-label="Voltar ao menu"></button>
-    <canvas id="zc" style="width:100%;display:block;image-rendering:pixelated"></canvas>
+    ${LC(`<canvas id="zc" style="width:100%;display:block;image-rendering:pixelated"></canvas>`,`
     <div class="zctl">
       <div class="row" style="flex-wrap:nowrap">
         <button class="btn big b-slate zhold" data-dir="-1" aria-label="Andar para a esquerda">◀</button>
@@ -999,10 +1021,10 @@ function scZone(el){
       <div class="t10 muted" style="margin:calc(var(--p)*6) 0 calc(var(--p)*3)">EMOTES</div>
       <div class="anims"><button class="btn b-purple" data-e="happy">FELIZ</button><button class="btn b-purple" data-e="angry">BRAVO</button><button class="btn b-purple" data-e="talk">FALAR</button><button class="btn b-purple" data-e="use">USAR</button></div>
       <div class="row" style="margin-top:calc(var(--p)*6)"><button class="btn b-slate" id="zNight">${zoneState.night?'VER DE DIA':'VER DE NOITE'}</button><button class="btn b-slate" data-go="inv">INVENTARIO</button></div>
-    </div></section>`;
+    </div>`,'wide')}</section>`;
   const cv=$('zc'), g=cv.getContext('2d');
   let VW=240; const VH=216;
-  function size(){ const cw=cv.clientWidth||300, dh=Math.min(innerHeight*0.5,cw*1.0); VW=Math.max(200,Math.min(420,Math.round(VH*cw/dh))); cv.width=VW; cv.height=VH; cv.style.height=Math.round(cw*VH/VW)+'px'; g.imageSmoothingEnabled=false; }
+  function size(){ const land=document.body.classList.contains('land'), cw=cv.clientWidth||300, dh=Math.min(innerHeight*(land?0.66:0.5),cw*1.0); VW=Math.max(200,Math.min(420,Math.round(VH*cw/dh))); cv.width=VW; cv.height=VH; cv.style.height=Math.round(cw*VH/VW)+'px'; g.imageSmoothingEnabled=false; }
   size(); addEventListener('resize',size);
   const pl={x:zoneState.x,face:zoneState.face,anim:'idle',f:0,emote:null};
   const npcs=[
@@ -1083,10 +1105,10 @@ function scZone(el){
 /* ---------- ANIMAIS ---------- */
 function scPets(el){
   let sel=S.pet||PETS[0].k;
-  el.innerHTML=win('Animais',`
+  el.innerHTML=win('Animais',LC(`
     <div class="stage" style="height:calc(var(--p)*80);align-items:flex-end"><canvas id="ptC" width="96" height="48" style="width:calc(var(--p)*192);height:calc(var(--p)*96)"></canvas></div>
-    <div class="shoplist" id="ptList" style="max-height:calc(var(--p)*170)"></div>
-    <div class="panel" style="margin-top:calc(var(--p)*6)" id="ptInfo"></div>`);
+    <div class="shoplist" id="ptList" style="max-height:calc(var(--p)*170)"></div>`,`
+    <div class="panel" style="margin-top:calc(var(--p)*6)" id="ptInfo"></div>`));
   const g=$('ptC').getContext('2d'); g.imageSmoothingEnabled=false; let f=0, anim='idle', t0=0;
   const iv=setInterval(()=>{ if(!$('ptC')){ clearInterval(iv); return; } f++; if(anim!=='idle'&&++t0>12){ anim='idle'; } g.clearRect(0,0,96,48); const fs=Z.pets[sel].fs; petFrame(g,sel,anim,f,48-fs/2,48-fs,false); },120);
   function draw(){
@@ -1107,11 +1129,11 @@ function starRow(n,big){ const w=big?78:35, h=big?26:16, img=big?'--starsBig':'-
   return `<span style="display:inline-block;position:relative;width:calc(var(--p)*${w});height:calc(var(--p)*${h})">${big?`<span style="position:absolute;inset:0;background:var(--starsDark) 0 0/100% 100%"></span>`:''}<span style="position:absolute;left:0;top:0;bottom:0;width:${(n/3)*100}%;background:var(${img}) 0 0/calc(var(--p)*${w}) 100% no-repeat"></span></span>`; }
 function scLevels(el){
   let sel=null;
-  el.innerHTML=win('Missoes',`
-    <div class="lv" id="lvG"></div>
+  el.innerHTML=win('Missoes',LC(`
+    <div class="lv" id="lvG"></div>`,`
     <div class="panel" style="margin-top:calc(var(--p)*6)" id="lvI"></div>
     <div class="t10 muted" style="margin:calc(var(--p)*6) 0 calc(var(--p)*3)">TELAS DA FASE</div>
-    <div class="row"><button class="btn b-slate" data-pv="pause">PAUSA</button><button class="btn b-slate" data-pv="win">VITORIA</button><button class="btn b-slate" data-pv="lose">DERROTA</button><button class="btn b-slate" data-pv="tip">DICA</button></div>`);
+    <div class="row"><button class="btn b-slate" data-pv="pause">PAUSA</button><button class="btn b-slate" data-pv="win">VITORIA</button><button class="btn b-slate" data-pv="lose">DERROTA</button><button class="btn b-slate" data-pv="tip">DICA</button></div>`));
   function draw(){
     $('lvG').innerHTML=Array.from({length:20},(_,i)=>{ const n=i+1, open=n<=S.levelMax, st=S.stars[n]||0;
       return `<button class="lvc ${sel===n?'on':''} ${open?'':'lock'}" data-n="${n}"><span class="t20 ol">${open?n:''}</span>${open?'':gi(8)}<span class="lvs">${open?starRow(st,false):''}</span></button>`; }).join('');
@@ -1187,7 +1209,7 @@ function vStock(vk,cat){
 function scVendor(el,arg){
   const vk=arg.v, v=V[vk]; let cat=0, mode='buy', sel=null;
   const fala=v.fala[Math.floor(Math.random()*v.fala.length)];
-  el.innerHTML=win(v.nome,`
+  el.innerHTML=win(v.nome,LC(`
     <div class="vtop">
       <div class="vpor"><canvas id="vC" width="48" height="48" style="width:calc(var(--p)*96);height:calc(var(--p)*96)"></canvas></div>
       <div style="flex:1;min-width:0">
@@ -1200,9 +1222,9 @@ function scVendor(el,arg){
     </div>
     <div class="t10 vdisc">DESCONTOS DE 2% ATE ${discMax()}%  CHANCE ${Math.round(discChance()*100)}%</div>
     <div class="tabs"><button class="tab" data-m="buy">COMPRAR</button>${vk==='pet'?'':'<button class="tab" data-m="sell">VENDER</button>'}</div>
-    <div class="tabs" id="vCats">${v.cats.length>1?v.cats.map((c,i)=>`<button class="tab" data-c="${i}">${c[0]}</button>`).join(''):''}</div>
+    <div class="tabs" id="vCats">${v.cats.length>1?v.cats.map((c,i)=>`<button class="tab" data-c="${i}">${c[0]}</button>`).join(''):''}</div>`,`
     <div id="vList"></div>
-    <div class="panel" style="margin-top:calc(var(--p)*6)" id="vInfo"></div>`);
+    <div class="panel" style="margin-top:calc(var(--p)*6)" id="vInfo"></div>`));
   // retrato animado
   const g=$('vC').getContext('2d'); g.imageSmoothingEnabled=false; let f=0;
   const iv=setInterval(()=>{ if(!$('vC')){ clearInterval(iv); return; } f++; g.clearRect(0,0,48,48);
@@ -1646,7 +1668,7 @@ function scEquip(el){
     return '';
   }
   const tot=armorSlots.reduce((a,k)=>a+(S.eq[k]!=null?ITEMS[S.eq[k]].def:0),0);
-  el.innerHTML=win('Equipamento',`
+  el.innerHTML=win('Equipamento',LC(`
     <div class="eqtop"><span class="chip t10 ol">CR ${S.credits.toLocaleString('pt-BR')}</span><span class="t10 good">DEFESA +${tot}</span></div>
     <div class="eqgrid">
       <div class="eqcol">${armorSlots.map(k=>slotBox(slotInner(k),`data-s="${k}"`)).join('')}</div>
@@ -1654,9 +1676,9 @@ function scEquip(el){
       <div class="eqcol">${['fogo','branca','pet','car'].map(k=>slotBox(slotInner(k),`data-s="${k}"`)).join('')}</div>
     </div>
     <div class="row" style="margin-top:calc(var(--p)*4)">${[['soco','SOCO',1],['faca','FACA',S.eq.branca!=null],['arma','ARMA',S.eq.fogo!=null]].map(([k,n,ok])=>`<button class="btn ${curMode()===k?'b-orange':'b-slate'}" data-mode="${k}" ${ok?'':'disabled'}>${n}</button>`).join('')}</div>
-    <div class="eqrow">${['sp1','sp2','med','sup'].map(k=>slotBox(slotInner(k),`data-s="${k}"`)).join('')}</div>
+    <div class="eqrow">${['sp1','sp2','med','sup'].map(k=>slotBox(slotInner(k),`data-s="${k}"`)).join('')}</div>`,`
     <div class="panel" id="eqP" style="margin-top:calc(var(--p)*6)"></div>
-    <div class="row" style="margin-top:calc(var(--p)*4)"><button class="btn b-red" data-go="menu">VOLTAR</button><button class="btn b-green" data-go="guns">OFICINA DE ARMAS</button></div>`);
+    <div class="row" style="margin-top:calc(var(--p)*4)"><button class="btn b-red" data-go="menu">VOLTAR</button><button class="btn b-green" data-go="guns">OFICINA DE ARMAS</button></div>`));
   const g=$('eqC').getContext('2d'); g.imageSmoothingEnabled=false; let f=0;
   const iv=setInterval(()=>{ if(!$('eqC')){ clearInterval(iv); return; } f++; g.clearRect(0,0,72,48);
     drawHeld(g,S.char,'idle',f,0,0,false); },150);
@@ -1691,7 +1713,7 @@ function scGuns(el){
     if(!L.length){ B.innerHTML=`<div class="lockbox"><p class="desc">Você ainda não tem arma de fogo. Rex, o armeiro da zona segura, vende várias.</p><button class="btn big b-green" data-go="zone">IR PARA A ZONA SEGURA</button></div>`; B.querySelector('[data-go]').onclick=()=>go('zone'); return; }
     i=(i+L.length)%L.length; const id=L[i], t=ITEMS[id], gid=gunIdx(id), gun=WI['gun'+gid];
     const dmg=Math.round(t.dano*(1+gup(id,'cano')*.08)), cad=+(t.vel*(1+gup(id,'mec')*.08)).toFixed(1), crit=gup(id,'mira')*3;
-    B.innerHTML=`
+    B.innerHTML=LC(`
       <div class="gwstage">
         <div class="gwside">${GPART.map(p=>`<span class="gwic">${it(p[3][0][0])}</span>`).join('')}</div>
         <canvas id="gwC" width="${gun.width+4}" height="${gun.height+4}" style="width:calc(var(--p)*${(gun.width+4)*3});height:calc(var(--p)*${(gun.height+4)*3})"></canvas>
@@ -1699,11 +1721,11 @@ function scGuns(el){
       </div>
       <div class="t16 ol" style="text-align:center">${px(t.nome)}</div>
       <div class="t10 muted" style="text-align:center;margin-bottom:calc(var(--p)*4)">DANO ${dmg}  CADENCIA ${cad}  CRITICO +${crit}%  ${S.eq.fogo===id?'<span class="good">EQUIPADA</span>':''}</div>
-      <div class="gwrow"><button class="btn b-slate" id="gwP">◀</button><span class="gwname t10">ARMA ${i+1}/${L.length}</span><button class="btn b-slate" id="gwN">▶</button><span class="gwbox">${S.eq.fogo===id?'✓':''}</span></div>
+      <div class="gwrow"><button class="btn b-slate" id="gwP">◀</button><span class="gwname t10">ARMA ${i+1}/${L.length}</span><button class="btn b-slate" id="gwN">▶</button><span class="gwbox">${S.eq.fogo===id?'✓':''}</span></div>`,`
       ${GPART.map(([k,nome,desc,cost])=>{ const l=gup(id,k), mult=l+1, can=l<5&&cost.every(([m,q])=>countOf(m)>=q*mult)&&S.credits>=150*mult;
         return `<div class="gwrow"><span class="gwname t10" style="flex:1">${px(nome)} <span class="muted">${l}/5</span></span><span class="gwcost t10">${l>=5?'MAX':cost.map(([m,q])=>`<span class="${countOf(m)>=q*mult?'good':'bad'}">${q*mult} ${px(MAT[m][0]).split(' ')[0]}</span>`).join(' ')+' CR '+150*mult}</span><button class="btn b-green" data-up="${k}" ${can?'':'disabled'}>+</button></div>
           <p class="desc" style="margin:0 0 calc(var(--p)*3)">${esc(desc)}</p>`; }).join('')}
-      <div class="row" style="margin-top:calc(var(--p)*4)"><button class="btn b-red" data-go="menu">VOLTAR</button><button class="btn b-green" id="gwEq" ${S.eq.fogo===id?'disabled':''}>${S.eq.fogo===id?'EQUIPADA':'EQUIPAR'}</button></div>`.replace(/(-?\d+)§/g,'calc(var(--p)*$1)');
+      <div class="row" style="margin-top:calc(var(--p)*4)"><button class="btn b-red" data-go="menu">VOLTAR</button><button class="btn b-green" id="gwEq" ${S.eq.fogo===id?'disabled':''}>${S.eq.fogo===id?'EQUIPADA':'EQUIPAR'}</button></div>`).replace(/(-?\d+)§/g,'calc(var(--p)*$1)');
     const c=$('gwC').getContext('2d'); c.imageSmoothingEnabled=false; c.drawImage(gun,2,2);
     $('gwP').onclick=()=>{ i--; sfx('tab'); draw(); }; $('gwN').onclick=()=>{ i++; sfx('tab'); draw(); };
     $('gwEq').onclick=()=>{ S.eq.fogo=id; save(); sfx('unlock'); toast('Equipou '+t.nome); draw(); };
@@ -1732,13 +1754,13 @@ function scGarage(el,arg){
   const isOwned=(c,v)=>v===null||c.k==='color'||c.price(v)===0||(S.owned[ownKey[c.k]]||[]).includes(c.k==='cargo'?baseOf(v):v);
   const priceOf=(c,v)=>{ const base=c.price(v); if(!inZone||!base) return {p:base,d:0}; const zp=zonePrice('car',c.k+':'+(c.k==='cargo'?baseOf(v):v),base); return {p:zp.p,d:zp.d}; };
   function setVal(c,v){ if(c.k==='body') prev.body=v; else if(c.k==='color') prev.body=v; else prev[c.k]=v; }
-  el.innerHTML=win('Oficina',`${inZone?`<div class="t10 vdisc">DESCONTOS DE 2% ATE ${discMax()}%  REPUTACAO: ${px(repName(S.rep))}</div>`:''}
+  el.innerHTML=win('Oficina',LC(`${inZone?`<div class="t10 vdisc">DESCONTOS DE 2% ATE ${discMax()}%  REPUTACAO: ${px(repName(S.rep))}</div>`:''}
     <div class="cuStage"><canvas id="gC" width="280" height="124" style="width:calc(var(--p)*280);height:calc(var(--p)*124);max-width:100%"></canvas></div>
-    <div class="cuIcons" id="cuI"></div>
+    <div class="cuIcons" id="cuI"></div>`,`
     <div id="cuRows"></div>
     <div class="bars t10" id="gSt" style="margin:calc(var(--p)*6) 0"></div>
     <div class="t10" id="cuTot" style="text-align:center;margin-bottom:calc(var(--p)*4)"></div>
-    <div class="row"><button class="btn big b-red" id="cuNo">DESFAZER</button><button class="btn big b-green" id="cuOk">APLICAR</button></div>`);
+    <div class="row"><button class="btn big b-red" id="cuNo">DESFAZER</button><button class="btn big b-green" id="cuOk">APLICAR</button></div>`));
   const g=$('gC').getContext('2d'); g.imageSmoothingEnabled=false; let fr=0;
   const iv=setInterval(()=>{ if(!$('gC')){ clearInterval(iv); return; } fr++; g.clearRect(0,0,280,124); const s=carSize(prev); drawCar(g,prev,fr,Math.round(140-s.w/2),122); },120);
   function need(){ let tot=0; const list=[]; CATS.forEach(c=>{ if(c.k==='color') return; const v=valOf(c); if(!isOwned(c,v)){ const pp=priceOf(c,v); tot+=pp.p; list.push([c,v,pp]); } }); return {tot,list}; }
@@ -1773,14 +1795,14 @@ const RACE_PRIZE=[1500,900,500,200];
 
 function scRace(el){
   const s=carStats(S.car), best=S.raceBest;
-  el.innerHTML=win('Corrida',`
-    <div class="cuStage"><canvas id="rcP" width="220" height="124" style="width:calc(var(--p)*220);height:calc(var(--p)*124)"></canvas></div>
-    <div class="bars t10" style="margin:calc(var(--p)*6) 0">${['Blindagem','Velocidade','Carga'].map((n,i)=>`<span>${px(n)}</span><span class="seg">${Array.from({length:10},(_,k)=>`<img src="${k<s[i]?A.barOn:A.barOff}" alt="" style="width:calc(var(--p)*12)">`).join('')}</span>`).join('')}</div>
+  el.innerHTML=win('Corrida',LC(`
+    <div class="cuStage"><canvas id="rcP" width="220" height="124" style="width:calc(var(--p)*220);height:calc(var(--p)*124);max-width:100%"></canvas></div>
+    <div class="bars t10" style="margin:calc(var(--p)*6) 0">${['Blindagem','Velocidade','Carga'].map((n,i)=>`<span>${px(n)}</span><span class="seg">${Array.from({length:10},(_,k)=>`<img src="${k<s[i]?A.barOn:A.barOff}" alt="" style="width:calc(var(--p)*12)">`).join('')}</span>`).join('')}</div>`,`
     <div class="panel"><div class="t16 ol">ESTRADA DO FIM DO MUNDO</div>
       <p class="desc">Uma corrida longa por 8 regiões, disputando contra 3 rivais motorizados. A estrada tem 3 faixas: o carro acelera sozinho e você troca de faixa com as setas para desviar de serras, gás tóxico, caixas e das bombas dos drones (a sombra vermelha mostra onde vão cair). Dois portões trancados se abrem em mini games. A blindagem vira a vida do carro, a velocidade define o máximo que ele corre e a carga aumenta o turbo.</p>
       <div class="t10 muted">PREMIO: 1º CR 1.500  2º CR 900  3º CR 500  4º CR 200  +10 POR MOEDA</div>
       ${best?`<div class="t10 good" style="margin-top:calc(var(--p)*3)">MELHOR RESULTADO: ${best.pos}º LUGAR EM ${best.t}s</div>`:''}</div>
-    <div class="row" style="margin-top:calc(var(--p)*6)"><button class="btn big b-slate" data-go="garage">OFICINA</button><button class="btn big b-green" id="rcGo">LARGAR</button></div>`);
+    <div class="row" style="margin-top:calc(var(--p)*6)"><button class="btn big b-slate" data-go="garage">OFICINA</button><button class="btn big b-green" id="rcGo">LARGAR</button></div>`));
   const g=$('rcP').getContext('2d'); g.imageSmoothingEnabled=false; let fr=0;
   const iv=setInterval(()=>{ if(!$('rcP')){ clearInterval(iv); return; } fr++; g.clearRect(0,0,220,124); const cs=carSize(S.car); drawCar(g,S.car,fr,Math.round(110-cs.w/2),122); },120);
   $('rcGo').onclick=()=>{ sfx('click'); startRace(); };
