@@ -204,6 +204,27 @@ i.it.food{background-image:var(--food);background-size:calc(var(--p)*448) calc(v
 .dtag{position:absolute;right:calc(var(--p)*-4);top:calc(var(--p)*-3);background:#e6336a;color:#fff;font-size:calc(var(--p)*10);line-height:1;padding:calc(var(--p)*1) calc(var(--p)*2);box-shadow:0 0 0 calc(var(--p)*1) #000;font-family:'CPX',monospace}
 .sitem .pr s{font-size:calc(var(--p)*10);text-decoration:line-through}
 .shopnote{border:calc(var(--p)*1) dashed #8babbf;padding:calc(var(--p)*2) calc(var(--p)*4);margin-bottom:calc(var(--p)*4);text-align:center}
+
+/* celular deitado (paisagem): HUD na lateral, janelas em 2 colunas, controles sobre o jogo */
+.land #col{max-width:none;flex-direction:row;align-items:flex-start;gap:calc(var(--p)*8);
+  padding:calc(var(--p)*4) max(calc(var(--p)*6),env(safe-area-inset-right,0px)) calc(var(--p)*10) max(calc(var(--p)*6),env(safe-area-inset-left,0px))}
+.land #hud{flex-direction:column;align-items:stretch;justify-content:flex-start;position:sticky;top:0;flex:none;padding-top:calc(var(--p)*4)}
+.land #hud .stat{flex-direction:column;align-items:stretch}
+.land #hud .chip{justify-content:center}
+.land #screen{flex:1;min-width:0;max-width:calc(var(--p)*660);margin:0 auto}
+.land #screen .wb{columns:2 calc(var(--p)*200);column-gap:calc(var(--p)*10)}
+.land #screen .wb>*{break-inside:avoid}
+.land #screen .wb>.tabs,.land #screen .wb>.branches{column-span:all}
+.land #screen .wb>.mhead{column-span:all}
+.land #screen .wb>.mlist{column-span:all;display:grid;grid-template-columns:1fr 1fr}
+.land .mlogo{width:min(100%,calc(var(--p)*170))!important}
+.land .zbox{display:grid;grid-template-columns:3fr 2fr;gap:calc(var(--p)*8);align-items:start}
+.land .zbox .zctl{margin-top:0}
+.land #game .gctl{position:absolute;left:0;right:0;bottom:0;pointer-events:none;
+  padding:calc(var(--p)*6) max(calc(var(--p)*6),env(safe-area-inset-right,0px)) max(calc(var(--p)*6),env(safe-area-inset-bottom,0px)) max(calc(var(--p)*6),env(safe-area-inset-left,0px))}
+.land #game .gctl>*{pointer-events:auto}
+.land #game .gb{opacity:.75}
+.land #game .ghud,.land #game .gbosses{padding-left:max(calc(var(--p)*6),env(safe-area-inset-left,0px));padding-right:max(calc(var(--p)*6),env(safe-area-inset-right,0px))}
 </style>
 </head>
 <body>
@@ -227,7 +248,7 @@ const px=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCas
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 /* ---------- escala de pixel ---------- */
-function fitP(){ const p=Math.max(1,Math.min(4,Math.min(innerWidth/250,innerHeight/330))); root.style.setProperty('--p',(Math.round(p*8)/8)+'px'); }
+function fitP(){ root.classList.toggle('land',innerWidth>innerHeight&&innerHeight<=600); const p=Math.max(1,Math.min(4,Math.min(innerWidth/250,innerHeight/330))); root.style.setProperty('--p',(Math.round(p*8)/8)+'px'); }
 fitP(); addEventListener('resize',fitP);
 
 /* ---------- imagens ---------- */
@@ -387,7 +408,7 @@ function digits(n){
   const s=n<1000?String(n):n<1e6?(n/1000).toFixed(n<10000?1:0).replace(/\.0$/,'')+'K':(n/1e6).toFixed(1).replace(/\.0$/,'')+'M';
   return '<span class="cnt">'+s.split('').map(ch=>{ const k=ch==='.'?'dot':ch; return `<img src="${A.digits[k]}" class="${k==='dot'?'dot':''}" style="width:calc(var(--p)*${k==='M'?9:k==='4'||k==='K'?7:k==='dot'?4:6})" alt="">`; }).join('')+'</span>';
 }
-function win(title,body,opts={}){ return `<section class="win"><div class="wt t20 ol">${px(title)}</div>${opts.noX?'':`<button class="wx" data-go="${backTo}" aria-label="Voltar"></button>`}${body}</section>`; }
+function win(title,body,opts={}){ return `<section class="win"><div class="wt t20 ol">${px(title)}</div>${opts.noX?'':`<button class="wx" data-go="${backTo}" aria-label="Voltar"></button>`}<div class="wb">${body}</div></section>`; }
 const rarTxt=r=>`<span style="color:${RAR[r].t}">${px(RAR[r].n)}</span>`;
 
 /* ---------- navegação ---------- */
@@ -405,8 +426,8 @@ function render(arg){
 /* ---------- MENU PRINCIPAL ---------- */
 function scMenu(el){
   const c=CHARS[S.char];
-  el.innerHTML=`<img src="${Z.logo}" alt="ApocalipseZz" style="display:block;width:min(100%,calc(var(--p)*270));margin:calc(var(--p)*2) auto calc(var(--p)*-2);image-rendering:pixelated">`+win('Menu',`
-    <div style="display:flex;gap:calc(var(--p)*6);align-items:flex-end;margin-bottom:calc(var(--p)*6)">
+  el.innerHTML=`<img class="mlogo" src="${Z.logo}" alt="ApocalipseZz" style="display:block;width:min(100%,calc(var(--p)*270));margin:calc(var(--p)*2) auto calc(var(--p)*-2);image-rendering:pixelated">`+win('Menu',`
+    <div class="mhead" style="display:flex;gap:calc(var(--p)*6);align-items:flex-end;margin-bottom:calc(var(--p)*6)">
       <canvas class="spr" id="mSpr" style="width:calc(var(--p)*96);height:calc(var(--p)*96)"></canvas>
       <div style="flex:1;padding-bottom:calc(var(--p)*6)">
         <div class="t16 ol">${px(c.nome)}</div>
@@ -414,7 +435,7 @@ function scMenu(el){
         <div class="t10 muted">${S.eq.branca!=null?px(ITEMS[S.eq.branca].nome):'SEM ARMA BRANCA'}</div>
       </div>
     </div>
-    <div class="list">
+    <div class="list mlist">
       <button class="btn big b-slate" data-go="levels">${gi(34)} JOGAR</button>
       <button class="btn big b-green" data-go="zone">${gi(19)} ZONA SEGURA</button>
       <button class="btn big b-slate" data-go="char">${gi(11)} PERSONAGEM</button>
@@ -832,7 +853,7 @@ const POIS=[
 let zoneState={x:90,face:1,night:false};
 function scZone(el){
   el.innerHTML=`<section class="win"><div class="wt t20 ol">ZONA SEGURA</div><button class="wx" data-go="menu" aria-label="Voltar ao menu"></button>
-    <canvas id="zc" style="width:100%;display:block;image-rendering:pixelated"></canvas>
+    <div class="zbox"><canvas id="zc" style="width:100%;display:block;image-rendering:pixelated"></canvas>
     <div class="zctl">
       <div class="row" style="flex-wrap:nowrap">
         <button class="btn big b-slate zhold" data-dir="-1" aria-label="Andar para a esquerda">◀</button>
@@ -842,10 +863,10 @@ function scZone(el){
       <div class="t10 muted" style="margin:calc(var(--p)*6) 0 calc(var(--p)*3)">EMOTES</div>
       <div class="anims"><button class="btn b-purple" data-e="happy">FELIZ</button><button class="btn b-purple" data-e="angry">BRAVO</button><button class="btn b-purple" data-e="talk">FALAR</button><button class="btn b-purple" data-e="use">USAR</button></div>
       <div class="row" style="margin-top:calc(var(--p)*6)"><button class="btn b-slate" id="zNight">${zoneState.night?'VER DE DIA':'VER DE NOITE'}</button><button class="btn b-slate" data-go="inv">INVENTARIO</button></div>
-    </div></section>`;
+    </div></div></section>`;
   const cv=$('zc'), g=cv.getContext('2d');
   let VW=240; const VH=216;
-  function size(){ const cw=cv.clientWidth||300, dh=Math.min(innerHeight*0.5,cw*1.0); VW=Math.max(200,Math.min(420,Math.round(VH*cw/dh))); cv.width=VW; cv.height=VH; cv.style.height=Math.round(cw*VH/VW)+'px'; g.imageSmoothingEnabled=false; }
+  function size(){ const cw=cv.clientWidth||300, land=root.classList.contains('land'), dh=land?Math.max(120,innerHeight-110):Math.min(innerHeight*0.5,cw*1.0); VW=Math.max(200,Math.min(420,Math.round(VH*cw/dh))); cv.width=VW; cv.height=VH; cv.style.height=Math.round(cw*VH/VW)+'px'; g.imageSmoothingEnabled=false; }
   size(); addEventListener('resize',size);
   const pl={x:zoneState.x,face:zoneState.face,anim:'idle',f:0,emote:null};
   const npcs=[
@@ -1235,7 +1256,7 @@ function startLevel(lv){
     </div>`.replace(/(\d+)§/g,'calc(var(--p)*$1)');
   document.body.appendChild(ov);
   const cv=$('gC'), g=cv.getContext('2d'); let VW=320; const VH=216;
-  function size(){ const cw=innerWidth, ch=Math.max(160,innerHeight-ov.querySelector('.gctl').offsetHeight-ov.querySelector('.ghud').offsetHeight-10);
+  function size(){ const cw=innerWidth, land=root.classList.contains('land'), ch=Math.max(160,innerHeight-(land?0:ov.querySelector('.gctl').offsetHeight)-ov.querySelector('.ghud').offsetHeight-10);
     VW=Math.max(170,Math.min(480,Math.round(VH*cw/ch))); cv.width=VW; cv.height=VH; const sc=Math.min(cw/VW,ch/VH); cv.style.width=Math.round(VW*sc)+'px'; cv.style.height=Math.round(VH*sc)+'px'; g.imageSmoothingEnabled=false; }
   size(); addEventListener('resize',size);
   playMusic('battle');
